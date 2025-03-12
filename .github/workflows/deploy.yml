@@ -32,4 +32,3 @@ jobs:
           script: |
             cd /home/ubuntu/phorge
             git pull origin master
-            sudo systemctl restart apache2
