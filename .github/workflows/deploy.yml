@@ -30,10 +30,10 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu || exit 1
+            cd /home/ubuntu
             if [ ! -d "Kid-app" ]; then
               echo "Cloning repository since 'Kid-app' does not exist..."
-              git clone https://github.com/JeeruPrasanth96/Kid-app.git
+              git clone git@github.com:JeeruPrasanth96/Kid-app.git
             else
               echo "Directory exists, pulling latest changes..."
               cd Kid-app
