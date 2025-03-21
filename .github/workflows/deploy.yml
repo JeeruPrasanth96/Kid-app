@@ -3,7 +3,7 @@ name: Deploy to AWS EC2
 on:
   push:
     branches:
-      - master  # Runs deployment on each push to the main branch
+      - master  # Runs deployment on each push to the master branch
 
 jobs:
   deploy:
@@ -18,9 +18,11 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
       - name: Test SSH Connection
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH Connection Successful'" || exit 0
+
       - name: Deploy Code to EC2
         uses: appleboy/ssh-action@master
         with:
@@ -28,6 +30,16 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu/phorge
-            git pull origin master
-            sudo systemctl restart apache2  # Restart Apache
+            cd /home/ubuntu || exit 1
+            if [ ! -d "Kid-app" ]; then
+              echo "Cloning repository since 'Kid-app' does not exist..."
+              git clone https://github.com/JeeruPrasanth96/Kid-app.git
+            else
+              echo "Directory exists, pulling latest changes..."
+              cd Kid-app
+              git reset --hard origin/master
+              git pull origin master
+            fi
+            sudo chown -R www-data:www-data /home/ubuntu/Kid-app
+            sudo chmod -R 755 /home/ubuntu/Kid-app
+            sudo systemctl restart apache2
